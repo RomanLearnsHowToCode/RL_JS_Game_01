@@ -1,5 +1,18 @@
 ! New project.. more information is comming soon
 
+LOG: 23/01/2022
+
+GENERAL:
+- Basic game loop is done, tutorial is now finished, game is working
+- Now I would like to do some branching and adding following features:
+  1)Refactor code, separate script.js to "modules" and learn how to export and import
+  2)Choose your player, with added player stats example: fish1 will have 3 lives and speed of 10 (whatever the value is) and fish type 2 will have 2 lives and speed 15
+  3)Progression through levels with added difficulty
+  4)Main Menu with top score values retreived and stored with JSON and sent to server
+
+ASSETS:
+- all assets are now optimised
+
 LOG: 16/01/2022
 
 GENERAL:
