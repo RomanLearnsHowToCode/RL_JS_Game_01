@@ -9,6 +9,8 @@ canvas.height = 500;
 let score = 0; 
 let gameFrame = 0; // we will increase this value every second, so we can spawn bubbles each 100 frames etc
 ctx.font = '50px Georgia'; // we will use font to display score
+let gameSpeed = 1;
+let gameOver = false;
 
 // Mouse Interactivity
 const mouse = {
@@ -68,6 +70,12 @@ class Player {
         if(mouse.y != this.y){
             this.y -= dy/30; // speed of movement
         }
+        if (gameFrame % 5 == 0) { // if game frame while divided by 5 = 0 (this statement will be true if game frame is divisible by 5 )
+            this.frameX++;
+            this.frameY += this.frameX == 4 ? 1 : 0;
+            this.frameX %= 4;
+            this.frameY %= 3;
+        }
     } // https://www.w3schools.com/tags/ref_canvas.asp 
     draw(){
         if (mouse.click){
@@ -77,12 +85,12 @@ class Player {
             ctx.lineTo(mouse.x, mouse.y);
             ctx.stroke();
         }
-        ctx.fillStyle = 'red';
+       /* ctx.fillStyle = 'red'; // we don't need to draw circle anymore, this is good for debugging 
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
         ctx.closePath();
-        ctx.fillRect(this.x, this.y, this.radius,10);
+        ctx.fillRect(this.x, this.y, this.radius,10);*/
 
         ctx.save(); // save current canvas settings
         ctx.translate(this.x, this.y); // pos x and y are now translated for both calls where is 0 - 60 and 0 - 45
@@ -101,6 +109,8 @@ const player = new Player();
 
 // Bubbles
 const bubblesArray = [];
+const bubbleImage = new Image();
+bubbleImage.src = 'Assets/bubble_pop_frame_01.png';
 class Bubble {
     constructor(){
         this.x = Math.random() * canvas.width;
@@ -117,12 +127,14 @@ class Bubble {
         this.distance = Math.sqrt(dx*dx + dy*dy); // pythagorian theorem to calculate collision distance
     }
     draw(){
-        ctx.fillStyle = 'blue';
+        // This would draw a blue circle (representing bubble)
+        /*ctx.fillStyle = 'blue'; 
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI *2); // Math.Pi * 2 = 360 degree circle
         ctx.fill();
         ctx.closePath();
-        ctx.stroke();
+        ctx.stroke();*/
+        ctx.drawImage(bubbleImage, this.x - 65, this.y - 65, this.radius*2.6, this.radius*2.6);
     }
 }
 
@@ -171,17 +183,112 @@ function handleBubbles(){
     }
 }
 
+// background X position, used in handleBackground as parameter
+const BG = {
+    x1: 0,
+    x2: canvas.width,
+    y: 0,
+    width: canvas.width,
+    height: canvas.height
+}
+// Repeating backgrounds
+const background = new Image();
+background.src = 'Assets/background1.png'
+
+function handleBackground() {
+    BG.x1 -= gameSpeed; // slide background image to left
+    if(BG.x1 < -BG.width) BG.x1 = BG.width;
+    ctx.drawImage(background, BG.x1, BG.y, BG.width, BG.height)
+    BG.x2 -= gameSpeed;
+    if(BG.x2 < -BG.width) BG.x2 = BG.width;
+    ctx.drawImage(background, BG.x2, BG.y, BG.width, BG.height)
+}
+
+// Enemies
+const enemyImage = new Image();
+enemyImage.src = 'Assets/enemy_fish_yellow_swim_left.png';
+
+class Enemy {
+    constructor(){
+        this.x = canvas.width - 200;
+        this.y = Math.random() * (canvas.height - 150) +  90;
+        this.radius = 60;
+        this.speed = Math.random() * 2 + 2;
+        this.frame = 0;
+        this.frameX = 0;
+        this.frameY = 0;
+        this.spriteWidth = 418;
+        this.spriteHeight = 397;
+    }
+    draw(){
+        /*ctx.fillStyle = 'red'; // we don't need to draw anymore.. 
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();*/
+        //ctx.drawImage(enemyImage, sx, sy, sw, sh, this.x, this.y, this.radius, this.radius); //s - source
+        ctx.drawImage(enemyImage, this.frameX * this.spriteWidth, this.frameY * this.spriteHeight, this.spriteWidth, this.spriteHeight, this.x - 50, this.y - 50, this.spriteWidth /4, this.spriteHeight/4); //s - source
+
+
+    } 
+    update(){
+        this.x -= this.speed;
+        if(this.x < 0 - this.radius * 2){
+            this.x = canvas.width + 200;
+            this.y = Math.random() * (canvas.height - 150) + 90;
+            this.speed = Math.random() * 2 + 2;
+        }//spaggetti code for animation
+        if (gameFrame % 5 == 0) { // if game frame while divided by 5 = 0 (this statement will be true if game frame is divisible by 5 )
+            this.frame++;
+            if(this.frame >= 12) this.frame = 0;
+            if(this.frame == 3 || this.frame == 7 || this.frame == 11) {
+                this.frameX = 0;
+            } else {
+                this.frameX++;
+            }
+            if(this.frame < 3) this.frameY = 0;
+            else if(this.frame <7) this.frameY = 1;
+            else if(this.frame <11) this.frameY = 2;
+            else this.frameY = 0;
+        }
+        //collision with player - create a right sided triangle
+        const dx = this.x - player.x; // distance from the object x minus player x
+        const dy = this.y - player.y; // distance from the object y minus player y 
+        const distance = Math.sqrt(dx * dx + dy * dy); // pythagorean theorem
+        if (distance < this.radius + player.radius){ 
+            handleGameOver();
+        }
+    }
+}
+
+const enemy1 = new Enemy();
+function handleEnemies(){
+    enemy1.draw();
+    enemy1.update();
+}
+
+function handleGameOver(){
+    ctx.fillStyle = 'white';
+    ctx.fillText('GAME OVER, you reached score ' + score, 110, 250);
+    gameOver = true;
+
+}
+
 // Animation Loop - principal recursion (call over and over)
 function animate(){
     ctx.clearRect(0,0, canvas.width, canvas.height);
+    // drawing is in Z-Index, bubbles and player are above the background
+    handleBackground();
     handleBubbles();
     player.update();
     player.draw();
+    handleEnemies();
     ctx.fillStyle = 'black';
     ctx.fillText('score: ' + score, 10, 50 );
     gameFrame++; 
     //console.log(gameFrame);
-    requestAnimationFrame(animate);
+    if (!gameOver){ // if true, stop animation
+        requestAnimationFrame(animate);
+    }
 }
 animate();
 
