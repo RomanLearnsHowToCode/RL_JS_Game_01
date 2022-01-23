@@ -268,7 +268,7 @@ function handleEnemies(){
 
 function handleGameOver(){
     ctx.fillStyle = 'white';
-    ctx.fillText('GAME OVER, you reached score ' + score, 110, 250);
+    ctx.fillText('GAME OVER, you reached score ' + score, 10, 250);
     gameOver = true;
 
 }
