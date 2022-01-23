@@ -5,6 +5,10 @@ A fish game, where you have to navigate your fish through a sea and collect bubb
 CONTROLS:
 Mouse click or screen tap to set direction of movement for the fish
 
+LOG: 23/01/2022 - REFACTOR CODE BRANCH
+Started with separation of classes and objects into modules, https://www.youtube.com/watch?v=cRHQNNcYf6s 
+
+
 LOG: 23/01/2022
 
 GENERAL:
